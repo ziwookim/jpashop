@@ -1,6 +1,8 @@
 package jpabook.jpashop.domain;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -11,6 +13,7 @@ import java.util.List;
 @Entity
 @Table(name="orders")
 @Getter @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
 
     @Id @GeneratedValue
@@ -51,4 +54,58 @@ public class Order {
         delivery.setOrder(this);
     }
 
+    /**
+     * ** 참고 **
+     * 엔티티가 비즈니스 로직을 가지고 객체 지향의 특성을 적극 활용하는 것을 '도메인 모델 패턴' 이라 한다.
+     * (서비스 계층은 단순히 엔티티에 필요한 요청을 위임하는 역할만 한다.)
+     *
+     * 반대로 엔티티에는 비즈니스 로직이 거의 없고 서비스 계층에서 대부분의 비즈니스 로직을 처리하는 것을 '트랜잭션 스크립트 패턴' 이라 한다.
+     *
+     * ** 이 프로젝트에서는 '도메인 모델 패턴'을 이용한다. **
+     *
+     * ** 정답은 없다. 기능과 문맥에 더 적합한 것을 이용하면 된다. 한 프로젝트 내에서 복합적으로 사용되기도 한다.
+     */
+    //== 생성 메서드 ==//
+    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems) {
+        Order order = new Order();
+        order.setMember(member);
+        order.setDelivery(delivery);
+        for(OrderItem orderItem : orderItems) {
+            order.addOrderItem(orderItem);
+        }
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        // 주문시간 현재시간으로 지정
+        return order;
+    }
+
+    //== 비즈니스 로직 ==//
+    /**
+     * 주문 취소
+     */
+    public void cancel() {
+        if(delivery.getStatus() == DeliveryStatus.COMP) {
+            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
+        }
+
+        this.setStatus(OrderStatus.CANCEL);
+        for(OrderItem orderItem : orderItems) {
+            orderItem.cancel();
+        }
+    }
+
+    //== 조회 로직 ==//
+    /**
+     * 전체 주문 가격 조회
+     */
+    public int getTotalPrice() {
+        int totalPrice = 0;
+        for(OrderItem orderItem : orderItems) {
+            totalPrice += orderItem.getTotalPrice();
+        }
+        return totalPrice;
+//        return orderItems.stream()
+//                .mapToInt(OrderItem::getTotalPrice)
+//                .sum();
+    }
 }
