@@ -59,6 +59,10 @@ public class OrderService {
         Order order = orderRepository.findOne(orderId);
         // 주문 취소
         order.cancel();
+        /**
+         * 도메일 모델 패턴의 장점
+         * 엔티티에 대해 (단위) 테스트 작성 가능 (핵심 비즈니스 로직이 대부분 엔티티에 포함 되어 있기 때문.)
+         */
 
         /**
          * *** JPA 사용의 최대 장점 ***
