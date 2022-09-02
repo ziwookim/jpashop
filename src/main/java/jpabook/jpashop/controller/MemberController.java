@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,5 +49,26 @@ public class MemberController {
         memberService.join(member);
 
         return "redirect:/";
+    }
+
+    @GetMapping("/members")
+    public String list(Model model) {
+        /**
+         * Entity와 폼(화면용 데이터)을 구분할 것.
+         * 아주 단순한 데이터 외에는 엔티티 데이터를 그대로 유지하는 것이 최우선이기 때문에,
+         * 화면 출력에 종속적인 것들을 엔티티 자체에 더하지 않고, 폼 객체(DTO)를 따로 생성하는 것이 바람직하다.
+         */
+
+        /**
+         * API 작성시에는 이유를 불문하고 Entity 자체를 외부로 반환해서는 안된다.
+         * 개인정보 유출될 가능성
+         * Entity에 로직을 추가했는데 API spec이 변해버리는 등 문제 발생 가능성
+         * 불안전 API 스펙
+         */
+
+        List<Member> members = memberService.findMembers();
+        model.addAttribute("members", members);
+
+        return "members/memberList";
     }
 }
