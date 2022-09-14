@@ -61,7 +61,19 @@ public class MemberService {
         return memberRepository.findAll();
     }
 
+    @Transactional
     public Member findOne(Long memberId) {
         return memberRepository.findOne(memberId);
+    }
+
+    public void update(Long id, String name) {
+//    public member update(Long id, String name) {
+        // command와 query 구분하기 위해서 Entity 타입으로 리턴하지 않는다.
+
+        /**
+         *  영속성 Context에서 변경 감지 이용한 Update
+         */
+        Member member = memberRepository.findOne(id);
+        member.setName(name);
     }
 }
