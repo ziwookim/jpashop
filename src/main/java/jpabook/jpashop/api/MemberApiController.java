@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
+import java.util.stream.Collectors;
 
 //@Controller @ResponseBody
 @RestController // @Controller + @ResponseBody
@@ -21,6 +23,48 @@ public class MemberApiController {
     /**
      * API to enroll a member .ver1
      */
+
+    @GetMapping("/api/v1/members")
+    public List<Member> membersV1() {
+        /**
+         * 외부에 Entity 객체를 그대로 받아서 노출해서는 절대로 안된다 !!!
+         * entity 스펙 변경 시, api 스펙 변경 필요 (에러 발생 가능성 너무 높음.)
+         */
+        return memberService.findMembers();
+    }
+
+    @GetMapping("/api/v2/members")
+    public Result memberV2() {
+        List<Member> findMembers = memberService.findMembers();
+        List<MemberDto> collect = findMembers.stream()
+                .map(m -> new MemberDto(m.getName()))
+                .collect(Collectors.toList());
+        /**
+         * List<Member> -> List<MemberDto> 데이터 타입 변환
+         * 노출 필요한 필드만 확인해서 Dto 객체에 넣을 것.
+         */
+
+
+//        return new Result(collect);
+        return new Result(collect.size(), collect);
+        /**
+         * 유연성을 위해 Result와 같은 타입으로 Object 타입으로 한번 감쌀 것.
+         */
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class Result<T> {
+        private int count; // 확장성 매우 편리
+        private T data;
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class MemberDto {
+        private String name;
+    }
+
     @PostMapping("/api/v1/members")
     public CreateMemberResponse saveMemberV1(@RequestBody @Valid Member member) {
         /**
