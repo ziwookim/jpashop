@@ -1,13 +1,18 @@
 package jpabook.jpashop.api;
 
+import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * xToOne (ManyToOne, OneToOne)
@@ -47,5 +52,56 @@ public class OrderSimpleApiController {
             order.getDelivery().getAddress(); // LAZY 강제 초기화
         }
         return all;
+    }
+
+    @GetMapping("/api/v2/simple-orders")
+    public List<SimpleOrderDto> ordersV2() {
+        List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+
+        /**
+         * 'N + 1 문제' 발생
+         *  orders 데이터 개수(rows count: N)만큼 연관 테이블에 쿼리 쏜다.
+         *  ex) 1 + N + N번 쿼리 실행 -> (ORDER)1 + Member(N) + Delivery(N)
+         *
+         * 해결방법 ? -> fetch = EAGER 로 변경하면 ? 안된다.
+         * 양방향 연관관계에서 쿼리 전달 예측이 어렵다.
+         * EAGER 사용 절대 하지 말 것.
+         *
+         * 모든 연관관계 데이터는 모두 fetch = LAZY로 설정할 것.
+         * 쿼리 최적화로 해결할 수 있도록 한다.
+         *
+         * * 지연로딩(LAZY)은 영속성 컨텍스트에서 조회하므로, 이미 조회된 경우에는 쿼리를 생략한다.
+         *
+         */
+        List<SimpleOrderDto> result =  orders.stream()
+                .map(o -> new SimpleOrderDto(o))
+//                .map(SimpleOrderDto::new)
+                .collect(Collectors.toList());
+
+        return result;
+    }
+
+    /**
+     * api 스펙을 명확하게 규제
+     */
+    @Data
+    static class SimpleOrderDto {
+        private Long orderId;
+        private String name;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private Address address; // value Object
+
+        /**
+         * Dto가 Entity를 파라미터로 갖는 것은 문제가 되지 않는다.
+         * 중요하지 않은 Dto가 중요한 Entity에게 의존하는 상황이기 때문.
+         */
+        public SimpleOrderDto(Order order) {
+            orderId = order.getId();
+            name = order.getMember().getName(); // LAZY 초기화
+            orderDate = order.getOrderDate();
+            orderStatus = order.getStatus();
+            address = order.getDelivery().getAddress(); // LAZY 초기화
+        }
     }
 }
