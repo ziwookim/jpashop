@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MemberApiController {
 
-    private  final MemberService memberService;
+    private final MemberService memberService;
 
     /**
      * API to enroll a member .ver1

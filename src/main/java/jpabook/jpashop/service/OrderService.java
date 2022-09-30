@@ -45,7 +45,7 @@ public class OrderService {
 //        OrderItem orderItem1 = new OrderItem(); // 생성자 Access protected로 제한해서 제약을 줄 것 -> 유지보수 효율 높이는 방법
 
         // 주문 생성 (일단 단일 상품만 주문 되도록 지정)
-        Order order = Order.createOrder(member, delivery,orderItem);
+        Order order = Order.createOrder(member, delivery, orderItem);
 
         // 주문 저장
         orderRepository.save(order);

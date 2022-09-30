@@ -20,10 +20,18 @@ public class Order {
     @Column(name="order_id")
     private Long id;
 
+    /** FetchType.LAZY: 지연 로딩
+     *  DB에서 긁어오지 않는다.
+     *  Order 데이터만 가져온다.
+     *  대신 Proxy Member 객체를 생성해서 가져온다. -> ByteBuddy(Interceptor)
+     *  jackson(json 관련) 라이브러리가 읽어들일 수 없음.
+     *  (proxy 기술)
+     * **/
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     // foreignKey (연관관계 주인)
     private Member member;
+    // FetchType.LAZY 일 경우, 실제 DB -> private Member member = new ByteBuddyInterceptor();
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
