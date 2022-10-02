@@ -96,4 +96,17 @@ public class OrderRepository {
         return query.getResultList();
     }
 
+    public List<Order> findAllWithMemberDelivery() {
+        /**
+         * fetch join
+         * fetch 데이터를 한 쿼리 데이터에서 모두 가져오게 함.
+         * 'LAZY'로 설정 후, fetch join을 이용하면 대부분의 성능 문제를 해결할 수 있다.
+         */
+
+        return em.createQuery(
+                "select o from Order o " +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class
+        ).getResultList();
+    }
 }
