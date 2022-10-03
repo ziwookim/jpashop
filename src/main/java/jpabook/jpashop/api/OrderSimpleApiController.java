@@ -5,6 +5,8 @@ import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.repository.order.simplequery.OrderSimpleQueryDto;
+import jpabook.jpashop.repository.order.simplequery.OrderSimpleQueryRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +34,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderSimpleApiController {
 
-    private  final OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final OrderSimpleQueryRepository orderSimpleQueryRepository;
 
     /**
      * Entity 직접 노출 절대 절대 안된다.
@@ -91,6 +94,16 @@ public class OrderSimpleApiController {
         return result;
     }
 
+    @GetMapping("/api/v4/simple-orders")
+    public List<OrderSimpleQueryDto> ordersV4() {
+        return orderSimpleQueryRepository.findOrderDtos();
+    }
+
+    /**
+     * v3 vs v4 ?
+     * 조회 빈도수를 고려해서 고르는 것이 바람직하다.
+     */
+
     /**
      * api 스펙을 명확하게 규제
      */
@@ -114,4 +127,12 @@ public class OrderSimpleApiController {
             address = order.getDelivery().getAddress(); // LAZY 초기화
         }
     }
+
+    /**
+     * ** 쿼리 방식 선택 권장 순서
+     * 1. 우선 엔티티를 DTO로 변환하는 방법을 선택한다. -> (v2)
+     * 2. 필요하면 fetch join으로 성능을 최적화 한다. -> 대부분의 성능 이슈 해결 된다. (v3)
+     * 3. 그래도 안된다면, DTO로 직접 조회하는 방법을 사용한다. -> (v4)
+     * 최후의 방법은 JPA가 제공하는 네이티브 SQL이나 스프링 JDBC Template을 사용해서 SQL을 직접 사용한다.
+     */
 }
