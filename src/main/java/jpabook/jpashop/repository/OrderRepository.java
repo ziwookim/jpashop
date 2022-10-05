@@ -109,4 +109,36 @@ public class OrderRepository {
                         " join fetch o.delivery d", Order.class
         ).getResultList();
     }
+
+    public List<Order> findAllWithItem() {
+        /**
+         * JPA distinct != DB distinct
+         * select distinct o from Order o <- 이런 경우,
+         * 중복되는 Order Entity의 중복을 후 데이터를 가져온다.
+         *
+         * fetch join으로 SQL 1번만 실행됨.
+         * 'distinct'를 사용한 이유는 1대 다 조인이 있으므로, 데이터베이스 row가 증가한다.
+         * 그 결과, 같은 order 엔티티의 조회수도 증가하게 된다. JPA의 distinct는 SQL에 distinct를 추가하고, 더해서 같은 엔티티가 조회되면, 애플리케이션에서 중복을 걸러준다.
+         * 이 예에서 order가 컬렉션 페치 조인 때문에 중복 조회 되는 것을 막아준다.
+         *
+         * ** 단점: 페이징 불가능(distinct 사용 시, order 순으로 데이터를 뽑아오는 것 자체가 말이 안되게 된다.)
+         * firstResult/maxResults 설정 경우, 모든 데이터를 memory에 퍼올린다. -> out of memory 위험 부담이 너무 높다.
+         * <<로그 내용>>
+         * firstResult/maxResults specified with collection fetch; applying in memory!
+         *
+         * ** 1대 다 fetch join에서는 페이징을 사용하지 말 것!
+         *
+         * 컬렉션 fetch join은 1개만 사용할 수 있다. -> (1대 다 관계에 대한 조인은 한번만 사용한다.)
+         * 컬렉션 둘 이상에 페치 조인을 사용하면 안된다.
+         * 데이터가 부정합하게 조회될 수 있다.
+         */
+        return em.createQuery(
+                "select distinct o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d" +
+                        " join fetch o.orderItems oi", Order.class)
+//                .setFirstResult(1) // start numbered from 0
+//                .setMaxResults(100)
+                .getResultList();
+    }
 }
