@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -33,6 +34,20 @@ public class Order {
     private Member member;
     // FetchType.LAZY 일 경우, 실제 DB -> private Member member = new ByteBuddyInterceptor();
 
+    /**
+     * 지연로딩 최적화
+     * 1. application.yml -> hibernate.default_batch_fetch_size: 개수 입력 <- 전체 최적화
+     * 2. @BatchSize <- 개별 최적화
+     *
+     * 이 옵션을 사용하면 컬렉션이나, 프록시 객체를 한꺼번에 설정한 size 만큼 IN 쿼리로 조회한다.
+     * 100 ~ 1000 개로 제한할 수 있도록 한다.
+     * 1000으로 잡으면 DB에 순간 부하가 증가할 수 있다.
+     * 하지만 100이든 1000이든 결국 전체 데이터를 로딩해야 하므로 메모리 사용량이 같다.
+     *
+     * WAS, DB가 버틸 수 있다면 1000으로,
+     * 아니라면 100개씩 늘려가면서 성능을 확인해보면서 설정하는 것이 가장 바람직하다.
+     */
+    @BatchSize(size = 1000)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
