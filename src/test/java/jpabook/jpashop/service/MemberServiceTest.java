@@ -37,7 +37,8 @@ public class MemberServiceTest {
 
         //then <- 이렇게 된다. (결과)
 //        em.flush(); // ** insert 처리 // 그렇지만, @Transactional rollback=true이면 다시 Rolled Back 된다.
-        assertEquals(member, memberRepository.findOne(saveId));
+//        assertEquals(member, memberRepository.findOne(saveId));
+        assertEquals(member, memberRepository.findById(saveId).get());
         // @Transactional 어노테이션 사용했기 때문에, 동일한 transaction 에서 pk 값이 같은 객체는 하나로 관리가 되기 때문에 가능하다.
 
     }
