@@ -10,6 +10,7 @@ import jpabook.jpashop.repository.order.query.OrderFlatDto;
 import jpabook.jpashop.repository.order.query.OrderItemQueryDto;
 import jpabook.jpashop.repository.order.query.OrderQueryDto;
 import jpabook.jpashop.repository.order.query.OrderQueryRepository;
+import jpabook.jpashop.service.query.OrderQueryService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -71,6 +72,20 @@ public class OrderApiController {
                 .collect(toList());
 
         return result;
+    }
+
+    /**
+     *   OSIV를 끈 상태에서 처리하기 위해 OrderQueryService를 이용해 Transaction 내에서 모든 db connection이 필요한 데이터를 처리한 후 반환하는 방법
+     *
+     *   OrderService
+     *   OrderService: 핵심 비즈니스 로직
+     *   OrderQueryService: 화면이나 API에 맞춘 서비스 (주로 읽기 전용 트랜잭션 사용)
+     */
+    private final OrderQueryService orderQueryService;
+
+    @GetMapping("/api/v3.2/orders")
+    public List<jpabook.jpashop.service.query.OrderDto> ordersV3_osviOff() {
+        return orderQueryService.ordersV3_osviOff();
     }
 
     /**
