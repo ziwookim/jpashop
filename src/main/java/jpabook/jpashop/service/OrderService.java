@@ -32,7 +32,8 @@ public class OrderService {
         // memberId만 받았기 떄문에 MemberRepository 필요
         // itemId만 받았기 떄문에 ItemRepository 필요
         // 엔티티 조회
-        Member member = memberRepository.findOne(memberId);
+//        Member member = memberRepository.findOne(memberId);
+        Member member = memberRepository.findById(memberId).get();
         Item item = itemRepository.findOne(itemId);
 
         // 배송정보 생성

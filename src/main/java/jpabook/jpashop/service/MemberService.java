@@ -63,7 +63,8 @@ public class MemberService {
 
     @Transactional
     public Member findOne(Long memberId) {
-        return memberRepository.findOne(memberId);
+//        return memberRepository.findOne(memberId);
+        return memberRepository.findById(memberId).get();
     }
 
     public void update(Long id, String name) {
@@ -73,7 +74,12 @@ public class MemberService {
         /**
          *  영속성 Context에서 변경 감지 이용한 Update
          */
-        Member member = memberRepository.findOne(id);
+//        Member member = memberRepository.findOne(id);
+        Member member = memberRepository.findById(id).get();
+        /**
+         * .findById(PK type): return type is 'Optional'
+         * we need to .get() method to get Entity data.
+         */
         member.setName(name);
     }
 }
